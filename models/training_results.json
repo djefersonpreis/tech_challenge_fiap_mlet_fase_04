@@ -1,0 +1,66 @@
+{
+  "symbol": "PETR4.SA",
+  "training_start": "2018-01-01",
+  "training_end": "2026-01-05T15:41:32.763643",
+  "model_version": "2.0_improved",
+  "parameters": {
+    "sequence_length": 60,
+    "train_ratio": 0.8,
+    "epochs_configured": 150,
+    "epochs_run": 89,
+    "batch_size": 32,
+    "architecture": "Bidirectional LSTM + BatchNorm + L2 Reg",
+    "lstm_units": [
+      128,
+      64,
+      32
+    ],
+    "dropout_rate": 0.3,
+    "learning_rate": 0.001,
+    "loss_function": "huber",
+    "l2_regularization": 0.001,
+    "gradient_clipping": 1.0
+  },
+  "features": {
+    "columns": [
+      "Close",
+      "RSI",
+      "MACD",
+      "MACD_Hist",
+      "BB_Position",
+      "BB_Width",
+      "ATR",
+      "Volatility",
+      "Momentum_10",
+      "Volume_Norm",
+      "ROC",
+      "Log_Return"
+    ],
+    "n_features": 12
+  },
+  "data_info": {
+    "total_records": 1960,
+    "train_records": 1568,
+    "test_records": 392,
+    "price_min": 3.243088722229004,
+    "price_max": 34.58118438720703,
+    "price_mean": 15.433013395508942
+  },
+  "training_history": {
+    "final_loss": 0.002147211693227291,
+    "final_val_loss": 0.0023939642123878,
+    "best_val_loss": 0.002087511820718646
+  },
+  "evaluation_metrics": {
+    "mae": 0.8280372765599465,
+    "rmse": 1.0522877532843937,
+    "mape": 2.6473790319095682,
+    "r2": 0.5476022876072403
+  },
+  "saved_files": {
+    "model": "../models/lstm_model.keras",
+    "scaler_features": "../models/scaler_features.pkl",
+    "scaler_target": "../models/scaler.pkl",
+    "feature_columns": "../models/feature_columns.json"
+  }
+}

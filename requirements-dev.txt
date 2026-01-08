@@ -1,0 +1,28 @@
+# ===========================================
+# Dependências de Desenvolvimento
+# FIAP Tech Challenge - Fase 4
+# ===========================================
+
+# Inclui dependências de produção
+-r requirements.txt
+
+# Testes
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+
+# Jupyter Notebook
+jupyter==1.0.0
+ipykernel==6.28.0
+
+# Visualização
+matplotlib==3.8.2
+seaborn==0.13.1
+
+# Qualidade de Código
+black==24.1.0
+isort==5.13.2
+flake8==7.0.0
+
+# Type Checking
+mypy==1.8.0

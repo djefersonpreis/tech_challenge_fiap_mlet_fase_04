@@ -1,0 +1,35 @@
+# ===========================================
+# Dockerfile para Treinamento do Modelo
+# FIAP Tech Challenge - Fase 4
+# ===========================================
+# Imagem para treinar o modelo LSTM
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Variáveis de ambiente
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    TF_CPP_MIN_LOG_LEVEL=2
+
+# Instala dependências do sistema
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copia requirements e instala dependências
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia código do modelo
+COPY ./model ./model
+
+# Cria diretório para modelos
+RUN mkdir -p /app/models
+
+# Volume para persistir modelos treinados
+VOLUME ["/app/models"]
+
+# Comando padrão: treinar o modelo
+CMD ["python", "-m", "model.train", "--symbol", "PETR4.SA", "--epochs", "100", "--model-dir", "/app/models"]

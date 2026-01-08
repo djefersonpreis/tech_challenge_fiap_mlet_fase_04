@@ -1,0 +1,96 @@
+# ===========================================
+# Docker Compose - Stock Price Prediction API
+# FIAP Tech Challenge - Fase 4
+# ===========================================
+# Orquestra API + Prometheus + Grafana
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # API de Previsão
+  # ==========================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stock-prediction-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PATH=/app/models/lstm_model.keras
+      - SCALER_PATH=/app/models/scaler.pkl
+      - TF_CPP_MIN_LOG_LEVEL=2
+    env_file:
+      - .env
+    volumes:
+      - ./models:/app/models:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - monitoring-network
+
+  # ==========================================
+  # Prometheus - Coleta de Métricas
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - monitoring-network
+    depends_on:
+      - api
+
+  # ==========================================
+  # Grafana - Visualização de Métricas
+  # ==========================================
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    restart: unless-stopped
+    networks:
+      - monitoring-network
+    depends_on:
+      - prometheus
+
+# ==========================================
+# Volumes Persistentes
+# ==========================================
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# ==========================================
+# Rede para Comunicação
+# ==========================================
+networks:
+  monitoring-network:
+    driver: bridge
