@@ -40,7 +40,8 @@ def train_model(
     epochs: int = 100,
     batch_size: int = 32,
     train_ratio: float = 0.8,
-    model_dir: str = "models"
+    model_dir: str = "models",
+    progress_callback = None
 ) -> dict:
     """
     Executa o pipeline completo de treinamento.
@@ -53,11 +54,19 @@ def train_model(
         epochs: Número máximo de épocas
         batch_size: Tamanho do batch
         train_ratio: Proporção de dados para treino
-        model_dir: Diretório para salvar o modelo
+        model_dir: Diretório base para salvar o modelo (será criado subdiretório com nome do symbol)
+        progress_callback: Função callback(epoch, total) para reportar progresso
         
     Returns:
         Dicionário com métricas e informações do treinamento
     """
+    # Normaliza símbolo
+    symbol = symbol.upper()
+    
+    # Cria diretório específico para o símbolo
+    symbol_dir = os.path.join(model_dir, symbol)
+    os.makedirs(symbol_dir, exist_ok=True)
+    logger.info(f"Diretório de saída: {symbol_dir}")
     results = {
         "symbol": symbol,
         "training_start": datetime.now().isoformat(),
@@ -149,9 +158,20 @@ def train_model(
     logger.info("ETAPA 4: Treinamento")
     logger.info("=" * 50)
     
-    # Cria diretório de modelos se não existir
-    os.makedirs(model_dir, exist_ok=True)
-    checkpoint_path = os.path.join(model_dir, "checkpoint.keras")
+    # Usa diretório específico do símbolo
+    checkpoint_path = os.path.join(symbol_dir, "checkpoint.keras")
+    
+    # Callback customizado para reportar progresso
+    class ProgressCallback:
+        def __init__(self, callback, total_epochs):
+            self.callback = callback
+            self.total_epochs = total_epochs
+        
+        def on_epoch_end(self, epoch, logs=None):
+            if self.callback:
+                self.callback(epoch + 1, self.total_epochs)
+    
+    progress_cb = ProgressCallback(progress_callback, epochs) if progress_callback else None
     
     history = model.train(
         X_train=X_train,
@@ -160,7 +180,8 @@ def train_model(
         y_val=y_test,
         epochs=epochs,
         batch_size=batch_size,
-        checkpoint_path=checkpoint_path
+        checkpoint_path=checkpoint_path,
+        progress_callback=progress_cb
     )
     
     results["training_history"] = {
@@ -203,12 +224,12 @@ def train_model(
     logger.info("ETAPA 6: Salvamento do Modelo")
     logger.info("=" * 50)
     
-    # Salva modelo final
-    model_path = os.path.join(model_dir, "lstm_model.keras")
+    # Salva modelo final no diretório do símbolo
+    model_path = os.path.join(symbol_dir, "lstm_model.keras")
     model.save_model(model_path)
     
     # Salva scaler
-    scaler_path = os.path.join(model_dir, "scaler.pkl")
+    scaler_path = os.path.join(symbol_dir, "scaler.pkl")
     preprocessor.save_scaler(scaler_path)
     
     # Salva resultados do treinamento
@@ -218,9 +239,29 @@ def train_model(
         "scaler": scaler_path
     }
     
-    results_path = os.path.join(model_dir, "training_results.json")
+    # Função auxiliar para converter numpy types para JSON
+    def convert_numpy(obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return obj
+    
+    def convert_dict(d):
+        if isinstance(d, dict):
+            return {k: convert_dict(v) for k, v in d.items()}
+        elif isinstance(d, list):
+            return [convert_dict(item) for item in d]
+        else:
+            return convert_numpy(d)
+    
+    results_serializable = convert_dict(results)
+    
+    results_path = os.path.join(symbol_dir, "training_results.json")
     with open(results_path, 'w', encoding='utf-8') as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
+        json.dump(results_serializable, f, indent=2, ensure_ascii=False)
     
     logger.info(f"Modelo salvo em: {model_path}")
     logger.info(f"Scaler salvo em: {scaler_path}")

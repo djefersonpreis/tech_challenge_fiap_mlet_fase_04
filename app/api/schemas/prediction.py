@@ -109,7 +109,8 @@ class HealthResponse(BaseModel):
     """Resposta do health check."""
     status: str
     model_loaded: bool
-    scaler_loaded: bool
+    scaler_features_loaded: bool
+    scaler_target_loaded: bool
     timestamp: str
 
 
@@ -118,3 +119,43 @@ class ErrorResponse(BaseModel):
     error: str
     detail: str
     timestamp: str
+
+
+class StockHistoryItem(BaseModel):
+    """Item individual do histórico de preços."""
+    date: str = Field(..., description="Data no formato YYYY-MM-DD")
+    open: float = Field(..., description="Preço de abertura")
+    high: float = Field(..., description="Preço máximo")
+    low: float = Field(..., description="Preço mínimo")
+    close: float = Field(..., description="Preço de fechamento")
+    volume: int = Field(..., description="Volume negociado")
+
+
+class StockHistoryResponse(BaseModel):
+    """Resposta com histórico de preços."""
+    symbol: str = Field(..., description="Símbolo da ação")
+    period_days: int = Field(..., description="Período em dias")
+    start_date: str = Field(..., description="Data inicial")
+    end_date: str = Field(..., description="Data final")
+    data: List[StockHistoryItem] = Field(..., description="Lista de preços históricos")
+    
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "symbol": "PETR4.SA",
+                "period_days": 30,
+                "start_date": "2025-12-09",
+                "end_date": "2026-01-08",
+                "data": [
+                    {
+                        "date": "2025-12-09",
+                        "open": 36.50,
+                        "high": 37.20,
+                        "low": 36.10,
+                        "close": 36.85,
+                        "volume": 45678900
+                    }
+                ]
+            }
+        }
+    }

@@ -40,7 +40,8 @@ async def health_check():
     return HealthResponse(
         status="healthy" if status_info["is_ready"] else "degraded",
         model_loaded=status_info["model_loaded"],
-        scaler_loaded=status_info["scaler_loaded"],
+        scaler_features_loaded=status_info["scaler_features_loaded"],
+        scaler_target_loaded=status_info["scaler_target_loaded"],
         timestamp=datetime.now().isoformat()
     )
 

@@ -185,7 +185,8 @@ class LSTMStockPredictor:
         epochs: int = 100,
         batch_size: int = 32,
         validation_split: float = 0.1,
-        checkpoint_path: Optional[str] = None
+        checkpoint_path: Optional[str] = None,
+        progress_callback=None
     ):
         """
         Treina o modelo LSTM.
@@ -199,6 +200,7 @@ class LSTMStockPredictor:
             batch_size: Tamanho do batch
             validation_split: Proporção para validação se X_val não fornecido
             checkpoint_path: Caminho para salvar checkpoints
+            progress_callback: Objeto com método on_epoch_end(epoch, logs) para reportar progresso
             
         Returns:
             Histórico de treinamento
@@ -210,6 +212,14 @@ class LSTMStockPredictor:
             checkpoint_path=checkpoint_path,
             patience=10
         )
+        
+        # Adiciona callback de progresso se fornecido
+        if progress_callback is not None:
+            from tensorflow.keras.callbacks import LambdaCallback
+            progress_cb = LambdaCallback(
+                on_epoch_end=lambda epoch, logs: progress_callback.on_epoch_end(epoch, logs)
+            )
+            callbacks.append(progress_cb)
         
         logger.info(f"Iniciando treinamento - Epochs: {epochs}, Batch Size: {batch_size}")
         

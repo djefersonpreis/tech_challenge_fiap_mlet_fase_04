@@ -1,0 +1,65 @@
+{
+  "symbol": "ITUB4.SA",
+  "training_start": "2026-01-08T23:39:18.449920",
+  "parameters": {
+    "sequence_length": 60,
+    "epochs": 150,
+    "batch_size": 32,
+    "train_ratio": 0.8
+  },
+  "data_info": {
+    "total_records": 1992,
+    "start_date": "2018-01-02",
+    "end_date": "2026-01-07",
+    "price_min": 13.036797523498535,
+    "price_max": 39.959999084472656,
+    "price_mean": 21.111107549035406
+  },
+  "data_split": {
+    "X_train_shape": [
+      1533,
+      60,
+      1
+    ],
+    "X_test_shape": [
+      399,
+      60,
+      1
+    ],
+    "y_train_shape": [
+      1533
+    ],
+    "y_test_shape": [
+      399
+    ]
+  },
+  "model_info": {
+    "name": "LSTM_Stock_Predictor",
+    "total_params": 129235,
+    "trainable_params": 129235,
+    "layers": 8,
+    "input_shape": "(None, 60, 1)",
+    "output_shape": "(None, 1)",
+    "optimizer": "Adam",
+    "loss": "mse"
+  },
+  "training_history": {
+    "epochs_run": 16,
+    "final_loss": 0.003029782557860017,
+    "final_val_loss": 0.02479388751089573,
+    "final_mae": 0.04295146092772484,
+    "final_val_mae": 0.13967444002628326,
+    "best_val_loss": 0.006201070733368397
+  },
+  "evaluation_metrics": {
+    "mae": 0.8032806511212114,
+    "rmse": 1.0310725403759395,
+    "mape": 2.570172016899752,
+    "r2": 0.9473060551319327
+  },
+  "training_end": "2026-01-08T23:40:00.201534",
+  "saved_files": {
+    "model": "/app/models/ITUB4.SA/lstm_model.keras",
+    "scaler": "/app/models/ITUB4.SA/scaler.pkl"
+  }
+}

@@ -19,7 +19,9 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.config import get_settings
 from app.core.model_loader import init_model
-from app.api.routes import prediction, health
+from app.core.model_registry import get_model_registry
+from app.services.training_queue import init_training_queue
+from app.api.routes import prediction, health, models
 
 # Configuração de logging
 logging.basicConfig(
@@ -47,18 +49,30 @@ async def lifespan(app: FastAPI):
     
     settings = get_settings()
     logger.info(f"Versão: {settings.app_version}")
-    logger.info(f"Modelo: {settings.model_path}")
+    logger.info(f"Modelo: {settings.models_dir}")
     logger.info(f"Símbolo padrão: {settings.default_symbol}")
     
-    # Carrega modelo
-    # try:
-    #     loader = init_model()
-    #     if loader.is_loaded:
-    #         logger.info("✓ Modelo carregado com sucesso!")
-    #     else:
-    #         logger.warning("⚠ Modelo não carregado - API em modo degradado")
-    # except Exception as e:
-    #     logger.error(f"✗ Erro ao carregar modelo: {e}")
+    # Inicializa registro de modelos
+    registry = get_model_registry()
+    registry_status = registry.get_status()
+    logger.info(f"Modelos disponíveis: {registry_status['ready_models']}")
+    
+    # Carrega modelo padrão
+    try:
+        loader = init_model()
+        if loader.is_loaded:
+            logger.info(f"✓ Modelo padrão ({settings.default_symbol}) carregado!")
+        else:
+            logger.warning("⚠ Modelo padrão não carregado - API em modo degradado")
+    except Exception as e:
+        logger.error(f"✗ Erro ao carregar modelo padrão: {e}")
+    
+    # Inicia fila de treinamento
+    try:
+        training_queue = init_training_queue()
+        logger.info("✓ Fila de treinamento iniciada!")
+    except Exception as e:
+        logger.error(f"✗ Erro ao iniciar fila de treinamento: {e}")
     
     logger.info("=" * 50)
     logger.info("API pronta para receber requisições")
@@ -68,6 +82,15 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Encerrando aplicação...")
+    
+    # Para fila de treinamento
+    try:
+        from app.services.training_queue import get_training_queue
+        queue = get_training_queue()
+        queue.stop_worker()
+        logger.info("Fila de treinamento encerrada")
+    except Exception as e:
+        logger.error(f"Erro ao encerrar fila: {e}")
 
 
 def create_app() -> FastAPI:
@@ -92,6 +115,10 @@ def create_app() -> FastAPI:
                 "description": "Endpoints para previsão de preços de ações"
             },
             {
+                "name": "Modelos",
+                "description": "CRUD de modelos e fila de treinamento"
+            },
+            {
                 "name": "Health & Info",
                 "description": "Endpoints de monitoramento e informações"
             }
@@ -113,6 +140,7 @@ def create_app() -> FastAPI:
     # Registra rotas
     app.include_router(health.router)
     app.include_router(prediction.router)
+    app.include_router(models.router)
     
     return app
 

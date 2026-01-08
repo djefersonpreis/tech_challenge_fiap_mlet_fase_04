@@ -1,0 +1,27 @@
+{
+  "updated_at": "2026-01-08T23:40:00.212909",
+  "jobs": [
+    {
+      "symbol": "ITUB4.SA",
+      "status": "completed",
+      "created_at": "2026-01-08T23:39:18.395210",
+      "started_at": "2026-01-08T23:39:18.395390",
+      "completed_at": "2026-01-08T23:40:00.205698",
+      "progress": 100,
+      "epochs_total": 150,
+      "epochs_current": 16,
+      "error_message": null,
+      "parameters": {
+        "epochs": 150,
+        "start_date": "2018-01-01",
+        "batch_size": 32
+      },
+      "result_metrics": {
+        "mae": 0.8032806511212114,
+        "rmse": 1.0310725403759395,
+        "mape": 2.570172016899752,
+        "r2": 0.9473060551319327
+      }
+    }
+  ]
+}

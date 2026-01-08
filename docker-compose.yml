@@ -18,13 +18,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - MODEL_PATH=/app/models/lstm_model.keras
-      - SCALER_PATH=/app/models/scaler.pkl
+      - MODELS_DIR=/app/models
+      - MODEL_PATH=/app/models/PETR4.SA/lstm_model.keras
+      - SCALER_PATH=/app/models/PETR4.SA/scaler.pkl
       - TF_CPP_MIN_LOG_LEVEL=2
     env_file:
       - .env
     volumes:
-      - ./models:/app/models:ro
+      - ./models:/app/models
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -78,6 +79,24 @@ services:
       - monitoring-network
     depends_on:
       - prometheus
+
+  # ==========================================
+  # Frontend Streamlit
+  # ==========================================
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: streamlit-app
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://api:8000
+    restart: unless-stopped
+    networks:
+      - monitoring-network
+    depends_on:
+      - api
 
 # ==========================================
 # Volumes Persistentes

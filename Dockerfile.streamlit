@@ -1,0 +1,27 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependências do sistema
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar e instalar requirements
+COPY frontend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar código do frontend (app.py + pages/)
+COPY frontend/app.py .
+COPY frontend/pages ./pages
+
+# Expor porta do Streamlit
+EXPOSE 8501
+
+# Configurar Streamlit para não abrir browser e aceitar conexões externas
+ENV STREAMLIT_SERVER_HEADLESS=true
+ENV STREAMLIT_SERVER_PORT=8501
+ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+
+# Comando para iniciar o Streamlit
+CMD ["streamlit", "run", "app.py"]

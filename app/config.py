@@ -16,15 +16,18 @@ class Settings(BaseSettings):
     
     # API
     app_name: str = "Stock Price Prediction API"
-    app_version: str = "2.0.0"
-    app_description: str = "API para previsão de preços de ações usando LSTM Multivariado - FIAP Tech Challenge Fase 4"
+    app_version: str = "2.1.0"
+    app_description: str = "API para previsão de preços de ações usando LSTM Multivariado com suporte a múltiplos modelos - FIAP Tech Challenge Fase 4"
     debug: bool = False
     
-    # Modelo
-    model_path: str = "models/lstm_model.keras"
-    scaler_path: str = "models/scaler.pkl"
-    scaler_features_path: str = "models/scaler_features.pkl"
-    features_path: str = "models/feature_columns.json"
+    # Diretório base de modelos
+    models_dir: str = "models"
+    
+    # Modelo (mantido para compatibilidade, mas agora usa models_dir/{symbol}/)
+    model_path: str = "models/PETR4.SA/lstm_model.keras"
+    scaler_path: str = "models/PETR4.SA/scaler.pkl"
+    scaler_features_path: str = "models/PETR4.SA/scaler_features.pkl"
+    features_path: str = "models/PETR4.SA/feature_columns.json"
     sequence_length: int = 60
     default_symbol: str = "PETR4.SA"
     
